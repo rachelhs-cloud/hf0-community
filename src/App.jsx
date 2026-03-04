@@ -234,15 +234,30 @@ const App = () => {
   const [hovered, setHovered] = useState(null);
   const [nextGenOpen, setNextGenOpen] = useState(false);
   const [nextGenProgram, setNextGenProgram] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
   const detailRef = useRef(null);
   const nextGenRef = useRef(null);
 
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 680);
+    check();
+    window.addEventListener('resize', check);
+    // Ensure viewport meta exists
+    if (!document.querySelector('meta[name="viewport"]')) {
+      const meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, initial-scale=1';
+      document.head.appendChild(meta);
+    }
+    return () => window.removeEventListener('resize', check);
+  }, []);
   useEffect(() => { setTimeout(() => setEntered(true), 50); }, []);
   useEffect(() => { if (selected !== null && detailRef.current) detailRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [selected]);
   useEffect(() => { if (nextGenOpen && nextGenRef.current) nextGenRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [nextGenOpen]);
 
   const active = PRODUCTS.find(p => p.id === selected);
   const mono = { fontFamily: '"SF Mono", "Fira Code", "Courier New", monospace' };
+  const px = isMobile ? '20px' : '40px';
 
   return (
     <div style={{ minHeight: '100vh', background: '#000', color: '#fff' }}>
@@ -250,33 +265,33 @@ const App = () => {
       {/* Hero */}
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: '80px 40px 60px', textAlign: 'center',
+        padding: isMobile ? '60px 20px 40px' : '80px 40px 60px', textAlign: 'center',
         opacity: entered ? 1 : 0, transition: 'opacity 1s ease',
       }}>
-        <Sphere size={150} />
+        <Sphere size={isMobile ? 100 : 150} />
         <h1 style={{
-          fontSize: '14px', ...mono, letterSpacing: '0.2em', fontWeight: 400,
-          color: '#fff', marginTop: '48px', marginBottom: '20px',
+          fontSize: isMobile ? '12px' : '14px', ...mono, letterSpacing: '0.2em', fontWeight: 400,
+          color: '#fff', marginTop: isMobile ? '36px' : '48px', marginBottom: '20px',
         }}>
           HF0 RESIDENCY
         </h1>
         <p style={{
-          fontSize: '40px', fontWeight: 300, letterSpacing: '-0.02em',
+          fontSize: isMobile ? '28px' : '40px', fontWeight: 300, letterSpacing: '-0.02em',
           lineHeight: 1.2, maxWidth: '520px', margin: '0 auto',
           fontFamily: 'Georgia, "Times New Roman", serif',
         }}>
           Building bonds that outlast the batch.
         </p>
         <p style={{
-          fontSize: '13px', color: '#555', marginTop: '24px', ...mono,
+          fontSize: isMobile ? '11px' : '13px', color: '#555', marginTop: '24px', ...mono,
         }}>
           5 products + 1 experimental
         </p>
       </div>
 
       {/* Product grid */}
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 40px 40px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: '#1a1a1a' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: `0 ${px} 40px` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '1px', background: '#1a1a1a' }}>
           {PRODUCTS.map((p, i) => (
             <button
               key={p.id}
@@ -284,12 +299,12 @@ const App = () => {
               onMouseEnter={() => setHovered(p.id)}
               onMouseLeave={() => setHovered(null)}
               style={{
-                textAlign: 'center', padding: '44px 24px', background: '#000',
+                textAlign: 'center', padding: isMobile ? '32px 20px' : '44px 24px', background: '#000',
                 border: 'none', cursor: 'pointer', transition: 'all 0.4s ease',
                 opacity: entered ? 1 : 0, transform: entered ? 'none' : 'translateY(8px)',
                 transitionDelay: `${0.3 + i * 0.06}s`,
                 position: 'relative',
-                gridColumn: i === 3 ? '1 / 2' : i === 4 ? '2 / 3' : undefined,
+                gridColumn: isMobile ? undefined : (i === 3 ? '1 / 2' : i === 4 ? '2 / 3' : undefined),
               }}
             >
               {selected === p.id && <div style={{ position: 'absolute', bottom: 0, left: '25%', right: '25%', height: '1px', background: '#fff' }} />}
@@ -310,29 +325,30 @@ const App = () => {
             </button>
           ))}
           {/* Empty cell to keep grid clean */}
-          <div style={{ background: '#000' }} />
+          {!isMobile && <div style={{ background: '#000' }} />}
         </div>
       </div>
 
       {/* Detail */}
       {active && (
-        <div ref={detailRef} style={{ maxWidth: '900px', margin: '0 auto', padding: '0 40px 80px' }}>
+        <div ref={detailRef} style={{ maxWidth: '900px', margin: '0 auto', padding: `0 ${px} 80px` }}>
           <div style={{ border: '1px solid #1a1a1a' }}>
             <div style={{
-              padding: '44px', borderBottom: '1px solid #1a1a1a',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+              padding: isMobile ? '28px 20px' : '44px', borderBottom: '1px solid #1a1a1a',
+              display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'flex-start',
+              gap: isMobile ? '20px' : '0',
             }}>
               <div style={{ maxWidth: '540px' }}>
                 <span style={{ ...mono, fontSize: '11px', color: '#444', letterSpacing: '0.1em' }}>
                   {active.number} / {active.category.toUpperCase()}
                 </span>
                 <h2 style={{
-                  fontSize: '30px', fontWeight: 300, marginTop: '14px', marginBottom: '16px',
+                  fontSize: isMobile ? '24px' : '30px', fontWeight: 300, marginTop: '14px', marginBottom: '16px',
                   fontFamily: 'Georgia, serif', letterSpacing: '-0.02em',
                 }}>
                   {active.name}
                 </h2>
-                <p style={{ fontSize: '15px', lineHeight: 1.8, color: '#888', fontFamily: 'Georgia, serif' }}>
+                <p style={{ fontSize: isMobile ? '14px' : '15px', lineHeight: 1.8, color: '#888', fontFamily: 'Georgia, serif' }}>
                   {active.description}
                 </p>
               </div>
@@ -344,8 +360,8 @@ const App = () => {
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-              <div style={{ padding: '40px 44px', borderRight: '1px solid #1a1a1a' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr' }}>
+              <div style={{ padding: isMobile ? '28px 20px' : '40px 44px' }}>
                 <h4 style={{ ...mono, fontSize: '10px', letterSpacing: '0.15em', color: '#444', marginBottom: '14px' }}>THE IDEA</h4>
                 <p style={{ fontSize: '14px', lineHeight: 1.85, color: '#888', fontFamily: 'Georgia, serif' }}>{active.whyItWorks}</p>
               </div>
@@ -356,13 +372,14 @@ const App = () => {
       )}
 
       {/* System */}
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 40px 80px' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: `0 ${px} 80px` }}>
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-          <h2 style={{ fontSize: '26px', fontWeight: 300, fontFamily: 'Georgia, serif' }}>How it connects</h2>
+          <h2 style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 300, fontFamily: 'Georgia, serif' }}>How it connects</h2>
         </div>
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 32px 1fr 32px 1fr',
-          alignItems: 'start', padding: '32px', border: '1px solid #1a1a1a',
+          display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 32px 1fr 32px 1fr',
+          alignItems: 'start', padding: isMobile ? '24px 20px' : '32px', border: '1px solid #1a1a1a',
+          gap: isMobile ? '24px' : '0',
         }}>
           {[
             { label: 'DURING', items: ['The Pulse', 'Campfire Dinners'], note: 'Weekly rhythms inside the house.' },
@@ -371,7 +388,7 @@ const App = () => {
             null,
             { label: 'ONGOING', items: ['Mirror Sessions'], note: 'Long-term listening practice.' },
           ].map((b, i) => b === null ? (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: '16px', color: '#222' }}>→</div>
+            isMobile ? null : <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: '16px', color: '#222' }}>→</div>
           ) : (
             <div key={i} style={{ textAlign: 'center' }}>
               <span style={{ ...mono, fontSize: '10px', letterSpacing: '0.15em', color: '#555' }}>{b.label}</span>
@@ -387,7 +404,7 @@ const App = () => {
       </div>
 
       {/* Divider */}
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 40px' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: `0 ${px}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
           <div style={{ flex: 1, height: '1px', background: '#1a1a1a' }} />
           <span style={{ ...mono, fontSize: '10px', letterSpacing: '0.15em', color: '#444' }}>EXPERIMENTAL</span>
@@ -396,13 +413,13 @@ const App = () => {
       </div>
 
       {/* Next Gen */}
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 40px 80px' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: `0 ${px} 80px` }}>
         <button
           onClick={() => { setNextGenOpen(!nextGenOpen); setSelected(null); setNextGenProgram(null); }}
           onMouseEnter={() => setHovered('ng')}
           onMouseLeave={() => setHovered(null)}
           style={{
-            width: '100%', textAlign: 'center', padding: '44px',
+            width: '100%', textAlign: 'center', padding: isMobile ? '32px 20px' : '44px',
             background: 'transparent', border: '1px solid #1a1a1a',
             cursor: 'pointer', transition: 'border-color 0.3s',
             borderColor: nextGenOpen || hovered === 'ng' ? '#333' : '#1a1a1a',
@@ -421,7 +438,7 @@ const App = () => {
 
         {nextGenOpen && (
           <div ref={nextGenRef} style={{ border: '1px solid #1a1a1a', borderTop: 'none' }}>
-            <div style={{ padding: '44px', borderBottom: '1px solid #1a1a1a' }}>
+            <div style={{ padding: isMobile ? '28px 20px' : '44px', borderBottom: '1px solid #1a1a1a' }}>
               <p style={{ fontSize: '15px', lineHeight: 1.8, color: '#888', fontFamily: 'Georgia, serif', maxWidth: '560px', margin: '0 auto', textAlign: 'center', marginBottom: '20px' }}>
                 {NEXTGEN.intro}
               </p>
@@ -430,7 +447,7 @@ const App = () => {
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: '#1a1a1a' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1px', background: '#1a1a1a' }}>
               {NEXTGEN.programs.map((prog, i) => (
                 <button
                   key={i}
@@ -465,7 +482,7 @@ const App = () => {
             </div>
 
             <div style={{ borderTop: '1px solid #1a1a1a' }}>
-              <div style={{ padding: '32px 44px' }}>
+              <div style={{ padding: isMobile ? '24px 20px' : '32px 44px' }}>
                 <h4 style={{ ...mono, fontSize: '10px', letterSpacing: '0.15em', color: '#444', marginBottom: '12px' }}>THE QUESTION</h4>
                 <p style={{ fontSize: '13px', lineHeight: 1.85, color: '#666', fontFamily: 'Georgia, serif' }}>{NEXTGEN.philosophy}</p>
               </div>
