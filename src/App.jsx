@@ -414,7 +414,7 @@ const App = () => {
             color: hovered === 'ng' || nextGenOpen ? '#fff' : '#666',
             transition: 'color 0.3s', marginBottom: '8px',
           }}>
-            {NEXTGEN.name}
+            HF<span style={{ fontFamily: "Helvetica, Arial, sans-serif", fontSize: '26px', fontWeight: 400 }}>0</span> Next Gen
           </h2>
           <p style={{ ...mono, fontSize: '11px', color: '#444' }}>{NEXTGEN.tagline}</p>
         </button>
